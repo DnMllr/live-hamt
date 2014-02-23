@@ -139,17 +139,6 @@ retrieve-from-trie  = (prefix-bit-size, trie, key, value) ->
   pointer[index]
 
 
-insert-x-random-str-into-trie = (prefix-bit-size, times, len, trie) ->
-
-  for x from 0 to times
-  
-    rand-str = randomString len
-    insert-into-trie-str prefix-bit-size, trie, rand-str, rand-str
-
-  trie
-
-
-
 insert-into-trie = (prefix-bit-size, trie, masks, value) ->
 
   pointer = trie
@@ -311,18 +300,35 @@ class hamt
   get: (key)        -> retrieve-from-trie @prefix, @trie, key
   set: (key,value) !-> @trie = insert-into-trie-str @prefix, @trie, key, value
 
+  all-values : (trie = @trie) ->
+    debugger
+    values = []
+    index  = get-index trie[0], (1 .<<. (1 .<<. @prefix))
+    values.push trie[index + 1] if index > -1
+    for slot in trie.slice 1
+      values = values ++ @all-values slot
+    values
 
-test-retrival-speed = ->
+test-retrival-speed = (max-bit-length, key, value) ->
 
   arr = []
 
-  for x from 1 to 10
-    arr.push new hamt x, \hello \goodbye
+  for x from 1 to max-bit-length
+    arr.push new hamt x, key, value
 
   aa = ->
-    it.get \hello
+    it.get key
 
   arr.map -> performanceTest 1000 false aa, it .mean
+
+insert-x-random-str-into-trie = (times, len, trie) ->
+
+  for x from 0 to times
+  
+    rand-str = randomString len
+    trie.set rand-str, rand-str
+
+  trie
 describe 'identity test' -> ``it``
 
   .. 'should pass.' ->  expect true .toBe true
