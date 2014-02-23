@@ -301,7 +301,6 @@ class hamt
   set: (key,value) !-> @trie = insert-into-trie-str @prefix, @trie, key, value
 
   all-values : (trie = @trie) ->
-    debugger
     values = []
     index  = get-index trie[0], (1 .<<. (1 .<<. @prefix))
     values.push trie[index + 1] if index > -1
